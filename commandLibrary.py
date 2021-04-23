@@ -54,7 +54,7 @@ def addMovie():
 
 def deleteMovie():
     print("Enter ID of Movie to Delete")
-    movieID = input()
+    movieID = int(input())
     print("")
     movieDelete(movieID)
 

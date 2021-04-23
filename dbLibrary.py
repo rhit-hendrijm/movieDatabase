@@ -1,15 +1,15 @@
 import pymongo
 
-c = pymongo.MongoClient()
-db = c.movieDB
+c = pymongo.MongoClient('mongodb://433-27.csse.rose-hulman.edu:40002,433-25.csse.rose-hulman.edu:40000,433-26.csse.rose-hulman.edu:40001,433-28.csse.rose-hulman.edu:40003/moviedb?replicaSet=movieapp')
+db = c.moviedb
 
 
 def createMovie(movieID, title, year, rating, netflix, hulu, prime, disney, directors, genres, runtime):
-    if db.movies.find({"movieID": movieID}).count() > 0:
+    if db.movies.find({"id": movieID}).count() > 0:
         print("There is already a movie with that ID in the system")
         return
     else:
-        toInsert = {"movieID": movieID, "title": title, "year": year, "rating": rating, "netflix": netflix,
+        toInsert = {"id": movieID, "title": title, "year": year, "rating": rating, "netflix": netflix,
                     "hulu": hulu, "prime": prime, "disney": disney, "directors": directors, "genres": genres,
                     "runtime": runtime}
         x = db.movies.insert_one(toInsert).inserted_id
@@ -17,14 +17,14 @@ def createMovie(movieID, title, year, rating, netflix, hulu, prime, disney, dire
 
 
 def movieDelete(movieID):
-    db.movies.delete_one({"movieID": movieID})
+    db.movies.delete_one({'id': movieID})
     return
 
 
 def updateMovie(movieID, title, year, rating, netflix, hulu, prime, disney, directorsToAdd, directorsToRemove,
                 genresToAdd, genresToRemove, runtime):
-    if db.movies.find({"movieID": movieID}).count() > 0:
-        query = {"movieID": movieID}
+    if db.movies.find({"id": movieID}).count() > 0:
+        query = {"id": movieID}
         if title != '':
             updatedTitle = {"$set": {"title": title}}
             db.movies.update_one(query, updatedTitle)
@@ -55,22 +55,22 @@ def updateMovie(movieID, title, year, rating, netflix, hulu, prime, disney, dire
 
         if directorsToAdd != []:
             for director in directorsToAdd:
-                if db.movies.find({"movieID": movieID, "directors": director}).count() == 0:
+                if db.movies.find({"id": movieID, "directors": director}).count() == 0:
                     db.movies.update_one(query, {"$push": {"directors": director}})
 
         if directorsToRemove != []:
             for director in directorsToRemove:
-                if db.movies.find({"movieID": movieID, "directors": director}).count() > 0:
+                if db.movies.find({"id": movieID, "directors": director}).count() > 0:
                     db.movies.update_one(query, {"$pull": {"directors": director}})
 
         if genresToAdd != []:
             for genre in genresToAdd:
-                if db.movies.find({"movieID": movieID, "genres": genre}).count() == 0:
+                if db.movies.find({"id": movieID, "genres": genre}).count() == 0:
                     db.movies.update_one(query, {"$push": {"genres": genre}})
 
         if genresToRemove != []:
             for genre in genresToRemove:
-                if db.movies.find({"movieID": movieID, "genres": genre}).count() > 0:
+                if db.movies.find({"id": movieID, "genres": genre}).count() > 0:
                     db.movies.update_one(query, {"$pull": {"genres": genre}})
 
         if runtime != -1:
@@ -86,64 +86,73 @@ def updateMovie(movieID, title, year, rating, netflix, hulu, prime, disney, dire
 def movieSearch(searchField, searchCriteria):
 
     if searchField == 'id':
-        if db.movies.find({"movieID": searchCriteria}).count() > 0:
-            for x in db.movies.find({"movieID": searchCriteria}):
+        cur = db.movies.find({"id": searchCriteria})
+        if cur.count() > 0:
+            for x in cur:
                 print(x)
             return
         else:
             print("There are no movies with that ID in the system")
 
     if searchField == 'title':
-        if db.movies.find({"title": searchCriteria}).count() > 0:
-            for x in db.movies.find({"title": searchCriteria}):
+        cur = db.movies.find({"title": searchCriteria})
+        if cur.count() > 0:
+            for x in cur:
                 print(x)
             return
         else:
             print("There are no movies with that title in the system")
 
     if searchField == 'year':
-        if db.movies.find({"year": searchCriteria}).count() > 0:
-            for x in db.movies.find({"year": searchCriteria}):
+        cur = db.movies.find({"year": searchCriteria})
+        if cur.count() > 0:
+            print('here')
+            for x in cur:
                 print(x)
             return
         else:
             print("There are no movies with that year in the system")
 
     if searchField == 'rating':
-        if db.movies.find({"rating": searchCriteria}).count() > 0:
-            for x in db.movies.find({"rating": searchCriteria}):
+        cur = db.movies.find({"rating": searchCriteria})
+        if cur.count() > 0:
+            for x in cur:
                 print(x)
             return
         else:
             print("There are no movies with that rating in the system")
 
     if searchField == 'streaming service':
-        if db.movies.find({searchCriteria: 1}).count() > 0:
-            for x in db.movies.find({searchCriteria: 1}):
+        cur = db.movies.find({searchCriteria: 1})
+        if cur.count() > 0:
+            for x in cur:
                 print(x)
             return
         else:
             print("There are no movies on this streaming service in the system")
 
     if searchField == 'director':
-        if db.movies.find({"directors": searchCriteria}).count() > 0:
-            for x in db.movies.find({"directors": searchCriteria}):
+        cur = db.movies.find({"directors": searchCriteria})
+        if cur.count() > 0:
+            for x in cur:
                 print(x)
             return
         else:
             print("There are no movies with that director in the system")
 
     if searchField == 'genre':
-        if db.movies.find({"genres": searchCriteria}).count() > 0:
-            for x in db.movies.find({"genres": searchCriteria}):
+        cur = db.movies.find({"genres": searchCriteria})
+        if cur.count() > 0:
+            for x in cur:
                 print(x)
             return
         else:
             print("There are no movies with that genre in the system")
 
     if searchField == 'runtime':
-        if db.movies.find({"runtime": searchCriteria}).count() > 0:
-            for x in db.movies.find({"runtime": searchCriteria}):
+        cur =  db.movies.find({"runtime": searchCriteria})
+        if cur.count() > 0:
+            for x in cur:
                 print(x)
             return
         else:
