@@ -1,7 +1,10 @@
 from commandLibrary import *
+from logLibrary import initializeLSN
 
 print("Welcome to the Library!")
 print("")
+initializeLSN() # initializes the LSN's for mongo, rethink and the current LSN tracker if they are not already
+
 
 while True:
     print("Please enter a command:")
@@ -11,7 +14,9 @@ while True:
     print("4 - Search For Movie")
     print("q - Quit")
 
-    cmd = input()
+    cmd = ''
+    while cmd == '': #for input of enter key
+        cmd = input()
 
     functions = {'1': addMovie,
                  '2': deleteMovie,
