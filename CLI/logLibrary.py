@@ -27,8 +27,10 @@ def initializeLSN():
 
 def logCommand(command): #increments currLSN after adding to log
     lsn = r.get(currLSN)
-    res = r.zadd(log,{command:lsn})
+    res = r.zadd(log,{command:lsn},nx=True,xx=False,ch=False,incr=False) #nx - add commands, don't edit scores if same!
+    #res = r.execute_command('ZADD', log, 'NX', lsn, command)
     if res <= 0:
+        print(res)
         print("Error adding command to log")
     else:
         r.incr(currLSN,1)

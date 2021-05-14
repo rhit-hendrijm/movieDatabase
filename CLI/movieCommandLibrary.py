@@ -11,8 +11,20 @@ def addMovie():
     title = input()
     print("Enter Year Released")
     year = input()
+    try:
+        int(year)
+    except: #if year is not able to convert to int
+        print("Invalid year, Aborted")
+        return
+
     print("Enter Rating")
     rating = input()
+    try:
+        int(rating)
+    except: #if rating is not able to convert to int
+        print("Invalid rating, Aborted")
+        return
+
     print("Is this movie on Netflix? y/n")
     if input() == 'y':
         netflix = '1'
@@ -39,7 +51,7 @@ def addMovie():
         director = input()
         directors.append(director)
         print("Add another director? y/n")
-        if input() == 'n':
+        if input() != 'y':
             break
     genres = []
     while True:
@@ -47,10 +59,16 @@ def addMovie():
         genre = input()
         genres.append(genre)
         print("Add another genre? y/n")
-        if input() == 'n':
+        if input() != 'y':
             break
     print("What is the runtime? (minutes)")
     runtime = input()
+    try:
+        int(runtime)
+    except: #if year is not able to convert to int
+        print("Invalid runtime, Aborted")
+        return
+
     print("")
     msg = " ".join(["ADDMOVIE", title, year, rating, netflix, hulu, prime, disney, 
                    convertListToString(directors), convertListToString(genres), runtime])
@@ -176,46 +194,49 @@ def searchForMovie():
     mongo_db = None #persistent connections attempt
     print("Enter Search Field (id, title, year, rating, streaming service, director, genre, runtime)")
     searchField = input()
-    searchby = 'None'
-    if searchField == 'id':
+    searchby = {}
+    if 'id' in searchField:
         print("Enter id to search for")
-        searchby = int(input())
-    if searchField == 'title':
+        searchby['id'] = int(input())
+    if 'title' in searchField:
         print("Enter title to search for")
-        searchby = input()
-    if searchField == 'year':
+        searchby['title'] = input()
+    if 'year' in searchField:
         print("Enter year to search for")
-        searchby = int(input())
-    if searchField == 'rating':
+        searchby['year'] = int(input())
+    if 'rating' in searchField:
         print("Enter rating to search for")
-        searchby = int(input())
-    if searchField == 'streaming service':
+        searchby['rating'] = int(input())
+    if 'streaming service' in searchField:
         print("Enter streaming service to search for")
-        searchField = input()
-        searchby = 1
-    if searchField == 'director':
+        search = input()
+        if 'hulu' in search:
+            searchby['hulu'] = 1
+        if 'disney' in search:
+            searchby['disney'] = 1
+        if 'prime' in search:
+            searchby['prime'] = 1
+        if 'netflix' in search:
+            searchby['netflix'] = 1
+    if 'director' in searchField:
         print("Enter director to search for")
-        searchField = 'directors'
         d = input()
-        searchby = {'$in':[d]}
-    if searchField == 'genre':
+        searchby['directors'] = {'$in':[d]}
+    if 'genre' in searchField:
         print("Enter genre to search for")
-        searchField = 'genres'
-        g = input()
-        searchby = {'$in':[g]}
-    if searchField == 'runtime':
+        g = input().split(' ')
+        searchby['genres'] = {'$in':g}
+    if 'runtime' in searchField:
         print("Enter runtime to search for")
-        searchby = int(input())
-    
-    search = {searchField:searchby}
-    print("")
+        searchby['runtime'] = int(input())
+    print()
     # Search for movies in db (if mongo is down, report a crash)
     try:
         if mongo_db == None:
             c = pymongo.MongoClient('mongodb://433-27.csse.rose-hulman.edu:40002,433-25.csse.rose-hulman.edu:40000,433-26.csse.rose-hulman.edu:40001,433-28.csse.rose-hulman.edu:40003/moviedb?replicaSet=movieapp')
             mongo_db = c.moviedb
-            print('find',search)
-        cur = mongo_db.movies.find(search)
+            print('search query:', searchby)
+        cur = mongo_db.movies.find(searchby)
         if cur.count() > 0:
             for x in cur:
                 print(x)
